@@ -1,30 +1,37 @@
 package icu.nyat.kusunoki.motd.shared;
 
 import icu.nyat.kusunoki.NyatLib;
-import java.util.*;
 import icu.nyat.kusunoki.Utils.NyatLibLogger;
-import org.bukkit.plugin.Plugin;
 
 public interface StatusPingListener {
 
-    Plugin plugin = NyatLib.getPlugin(NyatLib.class);
     default void handle(StatusPing ping) {
-        ping.setVersionName("Nyatwork " + NyatLib.BrandVersion);
-        ping.setVersionProtocol(NyatLib.BrandProtocolVersion);
+        try {
+            ping.setVersionName("Nyatwork " + NyatLib.BrandVersion);
+        } catch (UnsupportedOperationException ignored) {}
+        try {
+            ping.setVersionProtocol(NyatLib.BrandProtocolVersion);
+        } catch (UnsupportedOperationException ignored) {}
 
         try {
+            // Ensure current brand protocol is tracked; Set avoids duplicates
             NyatLib.ServerSupportedProtocolVersion.add(NyatLib.BrandProtocolVersion);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             NyatLibLogger.logERROR(ex.toString());
         }
 
-        if (!NyatLib.ServerSupportedProtocolVersion.isEmpty()) {
-            List<Integer> protocols = NyatLib.ServerSupportedProtocolVersion.stream().toList();
-
-            if (protocols.contains(ping.getClientProtocol())) {
-                ping.setVersionProtocol(ping.getClientProtocol());
+        if (NyatLib.ServerSupportedProtocolVersion != null && !NyatLib.ServerSupportedProtocolVersion.isEmpty()) {
+            int clientProto;
+            try {
+                clientProto = ping.getClientProtocol();
+            } catch (UnsupportedOperationException ex) {
+                // Not supported on this platform
+                return;
+            }
+            if (NyatLib.ServerSupportedProtocolVersion.contains(clientProto)) {
+                try { ping.setVersionProtocol(clientProto); } catch (UnsupportedOperationException ignored) {}
             } else {
-                ping.setVersionProtocol(NyatLib.BrandProtocolVersion);
+                try { ping.setVersionProtocol(NyatLib.BrandProtocolVersion); } catch (UnsupportedOperationException ignored) {}
             }
         }
     }

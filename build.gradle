@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'icu.nyat.Kusunoki'
-version = '0.11.0-Beta.1'
+version = '0.11.0-Beta.2'
 
 // Put all Gradle build outputs under 'target' to match Maven-style layout
 buildDir = 'target'

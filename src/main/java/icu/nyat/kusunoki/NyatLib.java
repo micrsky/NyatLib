@@ -13,18 +13,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 
 public final class NyatLib extends JavaPlugin {
     public static final String BRAND = "minecraft:brand";
-    private String PluginVersion = this.getDescription().getVersion();
+    private final String PluginVersion = this.getDescription().getVersion();
     public static NyatLibCore brandUpdater;
     public static String BrandName;
     public static String BrandVersion;
     public static int BrandProtocolVersion;
-    public static ArrayList<Integer> ServerSupportedProtocolVersion;
+    public static Set<Integer> ServerSupportedProtocolVersion;
     public static boolean isBroadcastEnabled;
 
     @Override
@@ -68,7 +66,7 @@ public final class NyatLib extends JavaPlugin {
        } catch (Exception e) {
            NyatLibLogger.logERROR(e.getMessage());
            NyatLibLogger.logERROR(e.toString());
-           e.printStackTrace();
+           NyatLibLogger.logERROR("Startup failed with exception above; disabling plugin.");
            onDisable();
            return;
        }
@@ -78,7 +76,7 @@ public final class NyatLib extends JavaPlugin {
            new PlayerListener(this, brandUpdater).register();
 
            if (brandUpdater.size() > 0) brandUpdater.broadcast();
-           if (brandUpdater.size() > 1) brandUpdater.start();
+           if (brandUpdater.size() > 1) brandUpdater.start(this);
        }
 
        NyatLib plugin = NyatLib.getPlugin(NyatLib.class);

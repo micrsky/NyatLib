@@ -11,6 +11,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -46,7 +47,7 @@ public class ReloadCmd implements CommandExecutor {
                 NyatLib.brandUpdater = new NyatLibCore(Collections.singletonList(NyatLib.BrandName + " " + NyatLib.BrandVersion + "§f"), 100, manager);
                 manager.addPacketListener(new PacketListener((NyatLib) plugin));
                 if (NyatLib.brandUpdater.size() > 0) NyatLib.brandUpdater.broadcast();
-                if (NyatLib.brandUpdater.size() > 1) NyatLib.brandUpdater.start();
+                if (NyatLib.brandUpdater.size() > 1) NyatLib.brandUpdater.start((JavaPlugin) plugin);
             }
             NyatLibLogger.logINFO("NyatLib reloaded.");
         } catch (Exception e) {

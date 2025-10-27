@@ -12,20 +12,18 @@ import io.netty.buffer.Unpooled;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class NyatLibCore extends BukkitRunnable{
     //private final NyatLib plugin;
     private final List<String> brand;
-    private final long period;
+    private final long periodMs;
     public int size() {
         return brand.size();
     }
@@ -35,15 +33,14 @@ public class NyatLibCore extends BukkitRunnable{
 
     private final ProtocolManager manager;
     private int index = 0;
-    private ScheduledFuture<?> task;
     private static boolean CompatibleMode =true;
 
 
-    public NyatLibCore(List<String> brand, long period, ProtocolManager manager) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+    public NyatLibCore(List<String> brand, long periodMs, ProtocolManager manager) throws ClassNotFoundException {
         //this.plugin = plugin;
 
         this.brand = brand;
-        this.period = period;
+        this.periodMs = periodMs;
         this.manager = manager;
         this.pdscl = Class.forName("net.minecraft.network.PacketDataSerializer");
         try{
@@ -60,15 +57,17 @@ public class NyatLibCore extends BukkitRunnable{
     @Override
     public void run() {
         this.broadcast();
-        this.start();
+        ++index;
+        if (index >= brand.size()) index = 0;
     }
 
-    public void start() {
-        task = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new UpdateBrandTask(), period, period, TimeUnit.MILLISECONDS);
+    public void start(JavaPlugin plugin) {
+        long periodTicks = Math.max(1, periodMs / 50);
+        this.runTaskTimer(plugin, 0L, periodTicks);
     }
 
     public void stop() {
-        if (task != null) task.cancel(true);
+        try { this.cancel(); } catch (IllegalStateException ignored) {}
     }
 
     public void broadcast() {
@@ -141,16 +140,6 @@ public class NyatLibCore extends BukkitRunnable{
         } catch (Exception e) {
             NyatLibLogger.logERROR(e.getMessage());
             NyatLibLogger.logINFO("flag");
-        }
-    }
-
-    private class UpdateBrandTask implements Runnable {
-
-        @Override
-        public void run() {
-            broadcast();
-            ++index;
-            if (index >= brand.size()) index = 0;
         }
     }
 }
